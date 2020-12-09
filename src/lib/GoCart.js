@@ -36,10 +36,6 @@ class GoCart {
             displayModal: false,
             // eslint-disable-next-line no-template-curly-in-string
             moneyFormat: '${{amount}}',
-            labelAddedToCart: 'was added to your cart.',
-            labelCartIsEmpty: 'Your Cart is currently empty!',
-            labelQuantity: 'Quantity:',
-            labelRemove: 'Remove',
         };
 
         this.defaults = Object.assign({}, defaults, options);
@@ -58,7 +54,7 @@ class GoCart {
         this.cartMiniCartContent = document.querySelector(this.defaults.cartMiniCartContent);
         this.cartMiniCartSubTotal = document.querySelector(this.defaults.cartMiniCartSubTotal);
         this.cartMiniCartFooter = document.querySelector(this.defaults.cartMiniCartFooter);
-        this.cartTrigger = document.querySelectorAll(this.defaults.cartTrigger);
+        this.cartTrigger = document.querySelector(this.defaults.cartTrigger);
         this.cartOverlay = document.querySelector(this.defaults.cartOverlay);
         this.cartCount = document.querySelector(this.defaults.cartCount);
         this.addToCart = document.querySelectorAll(this.defaults.addToCart);
@@ -71,10 +67,6 @@ class GoCart {
         this.drawerDirection = this.defaults.drawerDirection;
         this.displayModal = this.defaults.displayModal;
         this.moneyFormat = this.defaults.moneyFormat;
-        this.labelAddedToCart = this.defaults.labelAddedToCart;
-        this.labelCartIsEmpty = this.defaults.labelCartIsEmpty;
-        this.labelQuantity = this.defaults.labelQuantity;
-        this.labelRemove = this.defaults.labelRemove;
 
         this.init();
 
@@ -92,30 +84,22 @@ class GoCart {
             this.setDrawerDirection();
         }
 
-        document.addEventListener('click', (event) => {
-            if (event.target.matches(this.defaults.addToCart)) {
+        this.addToCart.forEach((item) => {
+            item.addEventListener('click', (event) => {
                 event.preventDefault();
-                let item = event.target;
-                let form = item.parentNode;
-                while ('form' !== form.tagName.toLowerCase()) {
-                    form = form.parentNode;
-                }
-                const formID = form.getAttribute('id');
+                const formID = item.parentNode.getAttribute('id');
                 this.addItemToCart(formID);
-            }
-        }, false);
-
-        this.cartTrigger.forEach((item) => {
-            item.addEventListener('click', () => {
-                if (this.isDrawerMode) {
-                    this.openCartDrawer();
-                } else {
-                    this.openMiniCart();
-                }
-                this.openCartOverlay();
             });
         });
 
+        this.cartTrigger.addEventListener('click', () => {
+            if (this.isDrawerMode) {
+                this.openCartDrawer();
+            } else {
+                this.openMiniCart();
+            }
+            this.openCartOverlay();
+        });
 
         this.cartOverlay.addEventListener('click', () => {
             this.closeFailModal();
@@ -299,7 +283,7 @@ class GoCart {
         <div class="go-cart-modal-item">
             <div class="go-cart-item__image" style="background-image: url(${product.image});"></div>
             <div class="go-cart-item__info">
-                <a href="${product.url}" class="go-cart-item__title">${product.product_title} ${productVariant}</a> ${this.labelAddedToCart}
+                <a href="${product.url}" class="go-cart-item__title">${product.product_title} ${productVariant}</a> was added to your cart.
             </div>
         </div>
       `;
@@ -316,12 +300,13 @@ class GoCart {
             const cartSingleProduct = `
         <div class="go-cart-item__single" data-line="${Number(index + 1)}">
             <div class="go-cart-item__info-wrapper">
-                <div class="go-cart-item__image" style="background-image: url(${item.image});"></div>
+                <a class="go-cart-item__image" href="${item.url}" style="background-image: url(${item.image});"></a>
+
                 <div class="go-cart-item__info">
                     <a href="${item.url}" class="go-cart-item__title">${item.product_title}</a>
                     <div class="go-cart-item__variant">${itemVariant}</div>
                     <div class="go-cart-item__quantity">
-                        <span class="go-cart-item__quantity-label">${this.labelQuantity} </span>
+                        <span class="go-cart-item__quantity-label">Quantity: </span>
                         <span class="go-cart-item__quantity-button js-go-cart-quantity-minus">-</span>
                         <input class="go-cart-item__quantity-number js-go-cart-quantity" type="number" value="${item.quantity}" disabled>
                         <span class="go-cart-item__quantity-button js-go-cart-quantity-plus">+</span>
@@ -329,7 +314,7 @@ class GoCart {
                 </div>
             </div>
             <div class="go-cart-item__price">${formatMoney(item.line_price, this.moneyFormat)}</div>
-            <a class="go-cart-item__remove ${this.removeFromCartNoDot}">${this.labelRemove}</a>
+            <a class="go-cart-item__remove ${this.removeFromCartNoDot}">Remove</a>
         </div>
       `;
             this.cartDrawerContent.innerHTML += cartSingleProduct;
@@ -380,7 +365,7 @@ class GoCart {
                     <a href="${item.url}" class="go-cart-item__title">${item.product_title}</a>
                     <div class="go-cart-item__variant">${itemVariant}</div>
                     <div class="go-cart-item__quantity">
-                        <span class="go-cart-item__quantity-label">${this.labelQuantity} </span>
+                        <span class="go-cart-item__quantity-label">Quantity: </span>
                         <span class="go-cart-item__quantity-button js-go-cart-quantity-minus">-</span>
                         <input class="go-cart-item__quantity-number js-go-cart-quantity" type="number" value="${item.quantity}" disabled>
                         <span class="go-cart-item__quantity-button js-go-cart-quantity-plus">+</span>
@@ -388,7 +373,7 @@ class GoCart {
                 </div>
             </div>
             <div class="go-cart-item__price">${formatMoney(item.line_price, this.moneyFormat)}</div>
-            <a class="go-cart-item__remove ${this.removeFromCartNoDot}">${this.labelRemove}</a>
+            <a class="go-cart-item__remove ${this.removeFromCartNoDot}">Remove</a>
         </div>
       `;
             this.cartMiniCartContent.innerHTML += cartSingleProduct;
@@ -427,13 +412,13 @@ class GoCart {
     renderBlankCartDrawer() {
         this.cartDrawerSubTotal.parentNode.classList.add('is-invisible');
         this.clearCartDrawer();
-        this.cartDrawerContent.innerHTML = `<div class="go-cart__empty">${this.labelCartIsEmpty}</div>`;
+        this.cartDrawerContent.innerHTML = '<div class="go-cart__empty">Your Cart is currenty empty!</div>';
     }
 
     renderBlankMiniCart() {
         this.cartMiniCartSubTotal.parentNode.classList.add('is-invisible');
         this.clearMiniCart();
-        this.cartMiniCartContent.innerHTML = `<div class="go-cart__empty">${this.labelCartIsEmpty}</div>`;
+        this.cartMiniCartContent.innerHTML = '<div class="go-cart__empty">Your Cart is currenty empty!</div>';
     }
 
     clearCartDrawer() {
